@@ -2,10 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";        // ✅ importar cors
 import tasksRouter from "./routes/tasks";
+import app from "./app";        // ✅ importar app
+
 
 dotenv.config();
 
-const app = express();
 const port = process.env.PORT || 3000;
 
 // Middleware para parsear JSON
@@ -19,5 +20,8 @@ app.use("/tasks", tasksRouter);
 
 // Iniciar servidor
 app.listen(port, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
+  console.log(`Server running on port ${port}`);
 });
+
+export default app;
+

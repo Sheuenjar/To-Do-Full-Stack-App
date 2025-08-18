@@ -1,0 +1,52 @@
+openapi: 3.0.3
+info:
+  title: To-Do API
+  version: 1.0.0
+paths:
+  /tasks/{id}:
+    patch:
+      summary: Actualiza o togglea el estado 'completed' de una tarea
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        description: Enviar { "completed": true } para setear explícito. Si se omite, se hace toggle.
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                completed:
+                  type: boolean
+      responses:
+        '200':
+          description: Tarea actualizada, devuelve la tarea
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Body inválido
+        '404':
+          description: Tarea no encontrada
+components:
+  schemas:
+    Task:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+          nullable: true
+        completed:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time

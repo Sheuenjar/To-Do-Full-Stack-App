@@ -1,19 +1,22 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue'
 import { useTasksStore } from '../store/useTasksStore'
+import type { Task } from '../types/task'
 
 interface Props {
-  taskToEdit?: { id: number; title: string; description: string }
-  onClose?: () => void
+  taskToEdit?: { id: number; title: string; description?: string | null }
 }
 
 const props = defineProps<Props>()
+const emit = defineEmits<{
+  (e: 'close'): void
+}>()
+
 const store = useTasksStore()
 
 const title = ref(props.taskToEdit?.title || '')
 const description = ref(props.taskToEdit?.description || '')
 
-// Si cambia la tarea a editar, actualizar los campos
 watch(() => props.taskToEdit, (newTask) => {
   title.value = newTask?.title || ''
   description.value = newTask?.description || ''
@@ -30,7 +33,7 @@ const submit = async () => {
 
   title.value = ''
   description.value = ''
-  props.onClose?.()
+  emit('close')
 }
 </script>
 
@@ -39,6 +42,6 @@ const submit = async () => {
     <input v-model="title" placeholder="Título" />
     <input v-model="description" placeholder="Descripción" />
     <button @click="submit">{{ props.taskToEdit ? 'Editar' : 'Agregar' }}</button>
-    <button v-if="props.onClose" @click="props.onClose">Cancelar</button>
+    <button @click="$emit('close')">Cancelar</button>
   </div>
 </template>

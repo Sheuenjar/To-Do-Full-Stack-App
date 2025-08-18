@@ -2,12 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { useTasksStore } from '../store/useTasksStore'
 import TaskForm from './TaskForm.vue'
+import type { Task } from '../types/task'
 
 const store = useTasksStore()
 const showForm = ref(false)
-const editingTask = ref<any | null>(null)
+const editingTask = ref<Task | null>(null)
 
-const editTask = (task: any) => {
+const editTask = (task: Task) => {
   editingTask.value = task
 }
 
@@ -21,12 +22,12 @@ onMounted(() => {
     <h2>Lista de tareas</h2>
 
     <!-- Form para agregar nueva tarea -->
-    <TaskForm v-if="showForm" @onClose="showForm = false" />
+    <TaskForm v-if="showForm" @close="showForm = false" />
     <button v-else @click="showForm = true">Agregar tarea</button>
 
     <ul>
       <li v-for="task in store.tasks" :key="task.id">
-        <input type="checkbox" :checked="task.completed" @change="store.toggleCompleted(task.id)" />
+        <input type="checkbox" :checked="task.completed" @change="store.toggleCompleted(task.id, !task.completed)" />
         <span :style="{ textDecoration: task.completed ? 'line-through' : 'none' }">
           {{ task.title }} - {{ task.description }}
         </span>
@@ -36,6 +37,6 @@ onMounted(() => {
     </ul>
 
     <!-- Form para editar -->
-    <TaskForm v-if="editingTask" :taskToEdit="editingTask" @onClose="editingTask = null" />
+    <TaskForm v-if="editingTask" :taskToEdit="editingTask" @close="editingTask = null" />
   </div>
 </template>

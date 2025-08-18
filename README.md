@@ -31,13 +31,46 @@ Full Stack To-Do List application built with Vue.js + Pinia (TypeScript) on the 
 
 
 ## Getting Started
-> Detailed instructions will be added once the application is functional.
+1. Base de datos
+- Crear BD PostgreSQL y ejecutar el script:
+  psql -U your_db_user -d your_db_name -f database/schema.sql
 
-For now, you can clone the repository and explore the structure:
-```bash
-git clone https://github.com/tu-usuario/To-Do-Full-Stack-App.git
-cd To-Do-Full-Stack-App
-```
+2. Backend
+- Ir a la carpeta backend:
+  cd backend
+- Copiar el ejemplo de variables:
+  cp .env.example .env
+  (editar `.env` con tus credenciales)
+- Instalar dependencias y levantar en modo dev:
+  npm install
+  npm run dev
+- API disponible en http://localhost:3000/tasks
+
+3. Frontend
+- Ir a la carpeta frontend:
+  cd frontend
+- Instalar y levantar:
+  npm install
+  npm run dev
+- El frontend usa el proxy `/api` hacia `http://localhost:3000` definido en [frontend/vite.config.ts](frontend/vite.config.ts)
+
+
+## API - Ejemplos PATCH /tasks/:id
+
+El endpoint PATCH /api/tasks/:id acepta un body opcional `{ "completed": boolean }`:
+- Si envías `{ "completed": true }` o `{ "completed": false }` se establece ese valor (idempotente).
+- Si no envías el campo `completed` (body vacío) el backend hará toggle del valor actual (comportamiento legacy).
+
+Ejemplos:
+
+- Toggle (sin body):
+  curl -X PATCH http://localhost:3000/tasks/3 -H "Content-Type: application/json" -d "{}"
+
+- Set explícito:
+  curl -X PATCH http://localhost:3000/tasks/3 -H "Content-Type: application/json" -d '{"completed": true}'
+
+La especificación OpenAPI está en `backend/openapi.yaml`
+
 
 ## License
 MIT License
