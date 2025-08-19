@@ -47,6 +47,9 @@ components:
           nullable: true
         completed:
           type: boolean
+        priority:
+          type: string
+          enum: [low, medium, high]
         created_at:
           type: string
           format: date-time

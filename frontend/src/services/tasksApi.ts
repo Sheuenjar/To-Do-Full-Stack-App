@@ -8,12 +8,12 @@ export const getTasks = async (): Promise<Task[]> => {
   return res.data
 }
 
-export const addTask = async (task: { title: string; description?: string | null }): Promise<Task> => {
+export const addTask = async (task: { title: string; description?: string | null; priority?: 'low'|'medium'|'high' }): Promise<Task> => {
   const res = await axios.post<Task>(API_URL, task)
   return res.data
 }
 
-export const updateTask = async (id: number, task: { title: string; description?: string | null }): Promise<Task> => {
+export const updateTask = async (id: number, task: { title: string; description?: string | null; priority?: 'low'|'medium'|'high' }): Promise<Task> => {
   const res = await axios.put<Task>(`${API_URL}/${id}`, task)
   return res.data
 }

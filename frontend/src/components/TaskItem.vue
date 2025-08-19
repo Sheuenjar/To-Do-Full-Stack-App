@@ -36,7 +36,7 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="task-row" role="listitem">
-    <div :class="['task-card', { 'task-card--completed': task.completed }]">
+  <div :class="['task-card', `priority-${task.priority}`, { 'task-card--completed': task.completed }]">
       <button class="checkbox-visual" :class="{ checked: task.completed }" @click="toggle" aria-label="Toggle completed">
         <svg v-if="task.completed" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
       </button>
@@ -44,6 +44,10 @@ onBeforeUnmount(() => {
       <div style="flex:1; text-align:left">
         <div class="task-title">{{ task.title }}</div>
         <div class="task-meta">{{ task.description }}</div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px">
+        <span class="priority-badge" :class="`priority-${task.priority}`">{{ task.priority.toUpperCase() }}</span>
       </div>
 
   <div class="menu-container" ref="menuRef" style="position:relative">

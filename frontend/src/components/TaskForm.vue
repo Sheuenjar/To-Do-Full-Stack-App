@@ -16,19 +16,21 @@ const store = useTasksStore()
 
 const title = ref(props.taskToEdit?.title || '')
 const description = ref(props.taskToEdit?.description || '')
+const priority = ref<'low'|'medium'|'high'>(props.taskToEdit?.priority || 'medium')
 
 watch(() => props.taskToEdit, (newTask) => {
   title.value = newTask?.title || ''
   description.value = newTask?.description || ''
+  priority.value = (newTask as Task | undefined)?.priority || 'medium'
 })
 
 const submit = async () => {
   if (!title.value.trim()) return alert('El título es obligatorio')
 
   if (props.taskToEdit) {
-    await store.editTask(props.taskToEdit.id, title.value, description.value)
+  await store.editTask(props.taskToEdit.id, title.value, description.value, priority.value)
   } else {
-    await store.createTask(title.value, description.value)
+  await store.createTask(title.value, description.value, priority.value)
   }
 
   title.value = ''
@@ -51,6 +53,15 @@ const submit = async () => {
     <label class="form-label">
       Descripción
       <textarea class="textarea-field" v-model="description" rows="3" placeholder="Descripción" aria-label="Descripción"></textarea>
+    </label>
+
+    <label class="form-label">
+      Priority
+      <select class="input-field select-field" v-model="priority" aria-label="Priority">
+        <option value="high">High</option>
+        <option value="medium">Medium</option>
+        <option value="low">Low</option>
+      </select>
     </label>
 
     <div class="form-actions row">

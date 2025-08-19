@@ -10,13 +10,13 @@ export const useTasksStore = defineStore('tasks', () => {
     tasks.value = await getTasks()
   }
 
-  const createTask = async (title: string, description?: string | null) => {
-    const newTask = await addTask({ title, description })
+  const createTask = async (title: string, description?: string | null, priority: 'low'|'medium'|'high' = 'medium') => {
+    const newTask = await addTask({ title, description, priority })
     tasks.value.push(newTask)
   }
 
-  const editTask = async (id: number, title: string, description?: string | null) => {
-    const updated = await updateTask(id, { title, description })
+  const editTask = async (id: number, title: string, description?: string | null, priority: 'low'|'medium'|'high' = 'medium') => {
+    const updated = await updateTask(id, { title, description, priority })
     tasks.value = tasks.value.map(t => t.id === id ? updated : t)
   }
 
@@ -30,5 +30,14 @@ export const useTasksStore = defineStore('tasks', () => {
     tasks.value = tasks.value.map(t => t.id === id ? updated : t)
   }
 
-  return { tasks, fetchTasks, createTask, editTask, removeTask, toggleCompleted }
+  const reorderTasks = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return
+    const list = tasks.value.slice()
+    const [moved] = list.splice(fromIndex, 1)
+    list.splice(toIndex, 0, moved)
+    tasks.value = list
+    // NOTE: persistence not implemented. If backend supports order, call an API here.
+  }
+
+  return { tasks, fetchTasks, createTask, editTask, removeTask, toggleCompleted, reorderTasks }
 })

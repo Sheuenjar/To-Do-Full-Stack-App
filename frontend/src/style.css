@@ -14,7 +14,7 @@
   --soft-shadow: 18px 18px 36px rgba(100,105,110,0.12);
   --soft-highlight: -10px -10px 20px rgba(255,255,255,0.82);
   --transition: 220ms cubic-bezier(.2,.9,.3,1);
-  --max-width: 920px;
+  --max-width: 1400px;
   --gap: 14px;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.45;
@@ -40,10 +40,12 @@
 }
 
 *{ box-sizing:border-box }
-html,body,#app{ height:100% }
-body{ margin:0; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; font-family:inherit }
+#app{ width:100%; max-width:var(--max-width); padding:40px }
 
-#app{ width:100%; max-width:var(--max-width); padding:28px }
+/* Center the app horizontally and vertically on wide screens */
+body{ margin:0; background:var(--bg); color:var(--text); -webkit-font-smoothing:antialiased; font-family:inherit; min-height:100vh; display:flex; align-items:center; justify-content:center }
+
+/* Keep #app centered by flex parent; remove default top-only flow on small screens via media query below */
 .container{ background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:20px; border-radius:12px }
 
 h1{ margin:0 0 6px 0; font-size:1.4rem }
@@ -53,9 +55,9 @@ h2{ margin:0 0 14px 0; font-size:0.95rem; color:var(--muted) }
 .task-card{ background:var(--surface); border-left:4px solid rgba(255,255,255,0.02); border-radius:var(--radius); padding:12px; display:flex; gap:20px; align-items:center }
 .task-card--active{ border-left-color:var(--primary) }
 .task-card--completed{
-  /* more obvious completed state: muted text + strike-through */
-  opacity:0.95;
+  /* Avoid opacity/filter to prevent creating a stacking context that hides dropdowns */
   border-left-color: rgba(46,164,79,0.12); /* subtle green hint */
+  background: rgba(255,255,255,0.01);
 }
 
 .task-card--completed .task-title,
@@ -66,6 +68,10 @@ h2{ margin:0 0 14px 0; font-size:0.95rem; color:var(--muted) }
 
 /* Task spacing wrapper */
 .task-row{ margin-bottom:12px; position:relative }
+
+/* indicate draggable via cursor */
+.task-row{ cursor: grab }
+.task-row:active{ cursor: grabbing }
 
 .task-title{ font-weight:600; font-size:1rem }
 .task-meta{ color:var(--muted); font-size:0.85rem }
@@ -82,6 +88,20 @@ input[type="text"], input[type="search"], textarea{
 .input-field:focus{ outline:2px solid rgba(53,167,221,0.16); box-shadow: 0 4px 14px rgba(53,167,221,0.06) }
 .textarea-field{ width:100%; padding:10px 12px; border-radius:8px; border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); color:var(--text); margin-top:6px; resize:vertical }
 .textarea-field::placeholder{ color: rgba(159,166,172,0.8) }
+
+/* Styled select to match dark corporate theme */
+.select-field{
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)), url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A6A5AA' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polyline points='6 9 12 15 18 9'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 12px 12px;
+  padding-right: 36px;
+}
+.select-field:focus{ outline:2px solid rgba(53,167,221,0.18); box-shadow: 0 6px 18px rgba(53,167,221,0.06) }
+.select-field option{ background:var(--surface); color:var(--text) }
 .form-actions{ margin-top:8px }
 
 .row{ display:flex; gap:12px; align-items:center }
@@ -117,11 +137,71 @@ input[type="text"], input[type="search"], textarea{
 .fade-leave-to{ opacity:0; transform:translateY(6px) }
 
 /* Responsive */
-@media (max-width:600px){ #app{ padding:16px } .container{ padding:16px } }
+@media (max-width:900px){
+  body{ display:block; min-height:100% }
+  #app{ padding:20px }
+  .container{ padding:16px }
+}
+
+@media (max-width:420px){
+  #app{ padding:12px }
+  .container{ padding:12px }
+}
+
+.drag-over{ outline: 2px dashed rgba(255,255,255,0.06); transform: translateY(4px); }
+
+/* Priority styles */
+.task-card.priority-high{ border-left-color: var(--danger) }
+.task-card.priority-medium{ border-left-color: var(--primary) }
+.task-card.priority-low{ border-left-color: var(--muted) }
+
+.priority-badge{ font-size:0.7rem; padding:4px 8px; border-radius:999px; background:rgba(255,255,255,0.02); color:var(--text); text-transform:uppercase }
+.priority-badge.priority-high{ background: rgba(179,57,44,0.12); color: var(--danger) }
+.priority-badge.priority-medium{ background: rgba(53,167,221,0.08); color: var(--accent) }
+.priority-badge.priority-low{ background: rgba(166,165,170,0.06); color: var(--muted) }
 
 /* Menu (three dots) */
 .menu-btn{ background:transparent; border:0; color:var(--text); padding:6px; border-radius:6px; cursor:pointer }
 .menu-btn:focus{ outline:2px solid rgba(53,167,221,0.12) }
-.menu-dropdown{ position:absolute; right:0; top:36px; background:var(--surface); border:1px solid rgba(255,255,255,0.04); border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:6px; min-width:140px; box-shadow: 0 12px 24px rgba(0,0,0,0.45); z-index:60 }
+.menu-dropdown{ position:absolute; right:0; top:36px; background:var(--surface); border:1px solid rgba(255,255,255,0.04); border-radius:8px; padding:6px; display:flex; flex-direction:column; gap:6px; min-width:140px; box-shadow: 0 12px 24px rgba(0,0,0,0.45); z-index:9999 }
 .menu-item{ background:transparent; border:0; color:var(--text); text-align:left; padding:8px 10px; border-radius:6px; cursor:pointer }
 .menu-item:hover{ background:rgba(255,255,255,0.02) }
+
+/* Progress bar tweaks (global) */
+.progress-container{ margin-top:4px }
+.progress-track{ background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.04)) }
+.progress-fill{ box-shadow: 0 6px 18px rgba(0,0,0,0.45) }
+
+/* Compact selects used in header filters */
+.container > .row-filters { display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+.container .input-field{ min-width:140px; max-width:320px }
+
+/* Filters panel to control overflow and dropdown alignment */
+.filters-panel{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; max-width:720px }
+.filters-panel .input-field{ flex:0 1 auto }
+.filters-panel select{ max-width:260px }
+
+/* Ensure dropdown menus and selects don't overflow the viewport on small screens */
+.menu-dropdown{ right:8px; left:unset; max-width:calc(100vw - 24px); box-sizing:border-box }
+
+/* Vertical stack of filters near the title */
+.filters-stack{ display:flex; flex-direction:column; gap:8px; min-width:220px }
+.filters-stack .input-field{ min-width:160px }
+
+/* Horizontal filters bar (navbar-like) */
+.filters-bar{ display:flex; align-items:center; justify-content:space-between; background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02)); padding:10px 14px; border-radius:10px }
+.filters-bar .input-field{ min-width:140px }
+.filters-bar .form-label{ margin:0 }
+
+
+/* Make header filters wrap nicely on small widths */
+@media (max-width:1100px){
+  .container > .row-filters{ gap:10px }
+  .container .input-field{ min-width:120px }
+}
+
+@media (max-width:700px){
+  .container > .row-filters{ gap:8px }
+  .container .input-field{ min-width:100%; width:100% }
+}
+
