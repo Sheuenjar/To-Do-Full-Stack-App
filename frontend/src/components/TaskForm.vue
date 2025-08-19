@@ -4,7 +4,7 @@ import { useTasksStore } from '../store/useTasksStore'
 import type { Task } from '../types/task'
 
 interface Props {
-  taskToEdit?: { id: number; title: string; description?: string | null }
+  taskToEdit?: Task
 }
 
 const props = defineProps<Props>()
@@ -38,10 +38,25 @@ const submit = async () => {
 </script>
 
 <template>
-  <div>
-    <input v-model="title" placeholder="Título" />
-    <input v-model="description" placeholder="Descripción" />
-    <button @click="submit">{{ props.taskToEdit ? 'Editar' : 'Agregar' }}</button>
-    <button @click="$emit('close')">Cancelar</button>
+  <div class="task-card" style="flex-direction:column; align-items:stretch">
+    <div class="form-header">
+      <strong>{{ props.taskToEdit ? 'Editar tarea' : 'Nueva tarea' }}</strong>
+    </div>
+
+    <label class="form-label">
+      Título
+      <input class="input-field" v-model="title" placeholder="Título" @keyup.enter="submit" aria-label="Título" />
+    </label>
+
+    <label class="form-label">
+      Descripción
+      <textarea class="textarea-field" v-model="description" rows="3" placeholder="Descripción" aria-label="Descripción"></textarea>
+    </label>
+
+    <div class="form-actions row">
+      <div class="spacer"></div>
+      <button class="btn" @click="$emit('close')">Cancelar</button>
+      <button class="btn btn-primary" @click="submit">{{ props.taskToEdit ? 'Guardar' : 'Agregar' }}</button>
+    </div>
   </div>
 </template>

@@ -2,15 +2,10 @@
 import { ref, onMounted } from 'vue'
 import { useTasksStore } from '../store/useTasksStore'
 import TaskForm from './TaskForm.vue'
-import type { Task } from '../types/task'
+import TaskItem from './TaskItem.vue'
 
 const store = useTasksStore()
 const showForm = ref(false)
-const editingTask = ref<Task | null>(null)
-
-const editTask = (task: Task) => {
-  editingTask.value = task
-}
 
 onMounted(() => {
   store.fetchTasks()
@@ -18,25 +13,24 @@ onMounted(() => {
 </script>
 
 <template>
-  <div>
-    <h2>Lista de tareas</h2>
+  <div class="container">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:18px">
+      <div>
+        <h1>Mis tareas</h1>
+        <h2>Organiza tu día — agrega, edita y marca como completadas</h2>
+      </div>
+      <div class="spacer"></div>
+      <div>
+        <button class="btn btn-primary" v-if="!showForm" @click="showForm = true">Agregar tarea</button>
+      </div>
+    </div>
 
-    <!-- Form para agregar nueva tarea -->
     <TaskForm v-if="showForm" @close="showForm = false" />
-    <button v-else @click="showForm = true">Agregar tarea</button>
 
-    <ul>
-      <li v-for="task in store.tasks" :key="task.id">
-        <input type="checkbox" :checked="task.completed" @change="store.toggleCompleted(task.id, !task.completed)" />
-        <span :style="{ textDecoration: task.completed ? 'line-through' : 'none' }">
-          {{ task.title }} - {{ task.description }}
-        </span>
-        <button @click="editTask(task)">Editar</button>
-        <button @click="store.removeTask(task.id)">Eliminar</button>
-      </li>
+    <ul style="list-style:none; padding:0; margin:18px 0; display:flex; flex-direction:column; gap:12px">
+      <transition-group name="fade" tag="div">
+  <TaskItem v-for="task in store.tasks" :key="task.id" :task="task" @toggle="store.toggleCompleted" @delete="store.removeTask" />
+      </transition-group>
     </ul>
-
-    <!-- Form para editar -->
-    <TaskForm v-if="editingTask" :taskToEdit="editingTask" @close="editingTask = null" />
   </div>
 </template>
