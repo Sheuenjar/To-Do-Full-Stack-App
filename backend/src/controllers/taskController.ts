@@ -8,7 +8,6 @@ import { z } from "zod";
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().nullable().optional(),
-  priority: z.enum(['low', 'medium', 'high']).optional(),
 });
 
 
@@ -18,9 +17,9 @@ const taskSchema = z.object({
  */
 export const getAllTasks = async (_req: Request, res: Response) => {
   try {
-    // Order by priority (high -> medium -> low) then by id
+    // Simple ordering by id (compatible with current DB schema)
     const result = await pool.query(
-      "SELECT * FROM tasks ORDER BY CASE priority WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END, id ASC"
+      "SELECT * FROM tasks ORDER BY id ASC"
     );
     res.json(result.rows);
   } catch (err) {
@@ -38,12 +37,11 @@ export const createTask = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
   }
   const { title, description } = parsed.data;
-  const priority = (parsed.data as any).priority ?? 'medium';
 
   try {
     const result = await pool.query(
-      "INSERT INTO tasks (title, description, priority) VALUES ($1, $2, $3) RETURNING *",
-      [title, description ?? null, priority]
+      "INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *",
+      [title, description ?? null]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -62,12 +60,11 @@ export const updateTask = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
   }
   const { title, description } = parsed.data;
-  const priority = (parsed.data as any).priority ?? 'medium';
 
   try {
     const result = await pool.query(
-      "UPDATE tasks SET title = $1, description = $2, priority = $3 WHERE id = $4 RETURNING *",
-      [title, description ?? null, priority, id]
+      "UPDATE tasks SET title = $1, description = $2 WHERE id = $3 RETURNING *",
+      [title, description ?? null, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Task not found" });

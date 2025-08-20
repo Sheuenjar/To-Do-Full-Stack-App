@@ -4,9 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "nodemon --watch src --exec \"ts-node\" src/index.ts",
-    "build": "tsc",
-    "test": "cross-env NODE_ENV=test vitest --run"
+  "dev": "nodemon --watch src --exec \"ts-node\" src/index.ts",
+  "build": "tsc",
+  "test": "cross-env NODE_ENV=test vitest --run",
+  "migrate": "node ./scripts/migrate-add-priority.js"
   },
   "keywords": [],
   "author": "",
