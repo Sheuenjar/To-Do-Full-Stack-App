@@ -5,7 +5,7 @@ info:
 paths:
   /tasks/{id}:
     patch:
-      summary: Actualiza o togglea el estado 'completed' de una tarea
+  summary: Update or toggle a task's 'completed' status
       parameters:
         - in: path
           name: id
@@ -13,7 +13,7 @@ paths:
           schema:
             type: integer
       requestBody:
-        description: Enviar { "completed": true } para setear explícito. Si se omite, se hace toggle.
+        description: Send { "completed": true } to set explicitly. If omitted, the status will be toggled.
         required: false
         content:
           application/json:
@@ -24,15 +24,15 @@ paths:
                   type: boolean
       responses:
         '200':
-          description: Tarea actualizada, devuelve la tarea
+          description: Task updated, returns the task
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Task'
         '400':
-          description: Body inválido
+          description: Invalid body
         '404':
-          description: Tarea no encontrada
+          description: Task not found
 components:
   schemas:
     Task:

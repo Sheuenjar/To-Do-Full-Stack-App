@@ -31,45 +31,45 @@ Full Stack To-Do List application built with Vue.js + Pinia (TypeScript) on the 
 
 
 ## Getting Started
-1. Base de datos
-- Crear BD PostgreSQL y ejecutar el script:
+1. Database
+- Create a PostgreSQL DB and run the script:
   psql -U your_db_user -d your_db_name -f database/schema.sql
 
 2. Backend
-- Ir a la carpeta backend:
+- Change to the backend folder:
   cd backend
-- Copiar el ejemplo de variables:
+- Copy the example env file:
   cp .env.example .env
-  (editar `.env` con tus credenciales)
-- Instalar dependencias y levantar en modo dev:
+  (edit `.env` with your credentials)
+- Install dependencies and run in dev mode:
   npm install
   npm run dev
-- API disponible en http://localhost:3000/tasks
+- API available at http://localhost:3000/tasks
 
 3. Frontend
-- Ir a la carpeta frontend:
+- Change to the frontend folder:
   cd frontend
-- Instalar y levantar:
+- Install and run:
   npm install
   npm run dev
-- El frontend usa el proxy `/api` hacia `http://localhost:3000` definido en [frontend/vite.config.ts](frontend/vite.config.ts)
+- The frontend uses the `/api` proxy to `http://localhost:3000` defined in [frontend/vite.config.ts](frontend/vite.config.ts)
 
 
-## API - Ejemplos PATCH /tasks/:id
+## API - Examples PATCH /tasks/:id
 
-El endpoint PATCH /api/tasks/:id acepta un body opcional `{ "completed": boolean }`:
-- Si envías `{ "completed": true }` o `{ "completed": false }` se establece ese valor (idempotente).
-- Si no envías el campo `completed` (body vacío) el backend hará toggle del valor actual (comportamiento legacy).
+The PATCH /api/tasks/:id endpoint accepts an optional body `{ "completed": boolean }`:
+- Sending `{ "completed": true }` or `{ "completed": false }` sets that value (idempotent).
+- If the `completed` field is omitted (empty body) the backend will toggle the current value (legacy behavior).
 
-Ejemplos:
+Examples:
 
-- Toggle (sin body):
+- Toggle (no body):
   curl -X PATCH http://localhost:3000/tasks/3 -H "Content-Type: application/json" -d "{}"
 
-- Set explícito:
+- Set explicitly:
   curl -X PATCH http://localhost:3000/tasks/3 -H "Content-Type: application/json" -d '{"completed": true}'
 
-La especificación OpenAPI está en `backend/openapi.yaml`
+The OpenAPI spec is at `backend/openapi.yaml`
 
 
 ## License

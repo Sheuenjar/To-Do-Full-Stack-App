@@ -4,9 +4,9 @@ import { z } from "zod";
 
 
 
-// Schema Zod para crear / editar tarea
+// Zod schema for creating / editing a task
 const taskSchema = z.object({
-  title: z.string().min(1, "El título es obligatorio"),
+  title: z.string().min(1, "Title is required"),
   description: z.string().nullable().optional(),
   priority: z.enum(['low', 'medium', 'high']).optional(),
 });
@@ -24,8 +24,8 @@ export const getAllTasks = async (_req: Request, res: Response) => {
     );
     res.json(result.rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error obteniendo tareas" });
+  console.error(err);
+  res.status(500).json({ error: "Error fetching tasks" });
   }
 };
 
@@ -35,7 +35,7 @@ export const getAllTasks = async (_req: Request, res: Response) => {
 export const createTask = async (req: Request, res: Response) => {
   const parsed = taskSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: "Body inválido", details: parsed.error.issues });
+    return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
   }
   const { title, description } = parsed.data;
   const priority = (parsed.data as any).priority ?? 'medium';
@@ -47,8 +47,8 @@ export const createTask = async (req: Request, res: Response) => {
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error creando tarea" });
+  console.error(err);
+  res.status(500).json({ error: "Error creating task" });
   }
 };
 
@@ -59,7 +59,7 @@ export const updateTask = async (req: Request, res: Response) => {
   const { id } = req.params;
   const parsed = taskSchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: "Body inválido", details: parsed.error.issues });
+    return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
   }
   const { title, description } = parsed.data;
   const priority = (parsed.data as any).priority ?? 'medium';
@@ -70,12 +70,12 @@ export const updateTask = async (req: Request, res: Response) => {
       [title, description ?? null, priority, id]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Tarea no encontrada" });
+      return res.status(404).json({ error: "Task not found" });
     }
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error editando tarea" });
+  console.error(err);
+  res.status(500).json({ error: "Error editing task" });
   }
 };
 
@@ -90,17 +90,17 @@ export const deleteTask = async (req: Request, res: Response) => {
       [id]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Tarea no encontrada" });
+      return res.status(404).json({ error: "Task not found" });
     }
-    res.json({ message: "Tarea eliminada", task: result.rows[0] });
+    res.json({ message: "Task deleted", task: result.rows[0] });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error eliminando tarea" });
+    res.status(500).json({ error: "Error deleting task" });
   }
 };
 
 /**
- * PATCH /tasks/:id (marcar completada / toggle si quieres)
+ * PATCH /tasks/:id (mark completed / toggle if omitted)
  */
 export const toggleTask = async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -110,7 +110,7 @@ export const toggleTask = async (req: Request, res: Response) => {
   });
   const parsed = bodySchema.safeParse(req.body);
   if (!parsed.success) {
-    return res.status(400).json({ error: "Body inválido", details: parsed.error.issues });
+    return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
   }
   const { completed } = parsed.data;
 
@@ -129,13 +129,13 @@ export const toggleTask = async (req: Request, res: Response) => {
     }
 
     if (!result || result.rows.length === 0) {
-      return res.status(404).json({ error: "Tarea no encontrada" });
+      return res.status(404).json({ error: "Task not found" });
     }
 
-    res.json(result.rows[0]);
+  res.json(result.rows[0]);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: "Error actualizando estado de la tarea" });
+  res.status(500).json({ error: "Error updating task status" });
   }
 };
 

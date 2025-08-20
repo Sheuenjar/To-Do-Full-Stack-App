@@ -56,8 +56,8 @@ onBeforeUnmount(() => {
         </button>
 
         <div v-if="showMenu" class="menu-dropdown" role="menu">
-          <button class="menu-item" @click="edit" role="menuitem">Editar</button>
-          <button class="menu-item" @click="del" role="menuitem">Eliminar</button>
+          <button class="menu-item" @click="edit" role="menuitem">Edit</button>
+          <button class="menu-item" @click="del" role="menuitem">Delete</button>
         </div>
       </div>
     </div>

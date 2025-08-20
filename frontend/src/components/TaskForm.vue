@@ -25,7 +25,7 @@ watch(() => props.taskToEdit, (newTask) => {
 })
 
 const submit = async () => {
-  if (!title.value.trim()) return alert('El título es obligatorio')
+  if (!title.value.trim()) return alert('Title is required')
 
   if (props.taskToEdit) {
   await store.editTask(props.taskToEdit.id, title.value, description.value, priority.value)
@@ -42,17 +42,17 @@ const submit = async () => {
 <template>
   <div class="task-card" style="flex-direction:column; align-items:stretch">
     <div class="form-header">
-      <strong>{{ props.taskToEdit ? 'Editar tarea' : 'Nueva tarea' }}</strong>
+  <strong>{{ props.taskToEdit ? 'Edit task' : 'New task' }}</strong>
     </div>
 
     <label class="form-label">
-      Título
-      <input class="input-field" v-model="title" placeholder="Título" @keyup.enter="submit" aria-label="Título" />
+      Title
+      <input class="input-field" v-model="title" placeholder="Title" @keyup.enter="submit" aria-label="Title" />
     </label>
 
     <label class="form-label">
-      Descripción
-      <textarea class="textarea-field" v-model="description" rows="3" placeholder="Descripción" aria-label="Descripción"></textarea>
+      Description
+      <textarea class="textarea-field" v-model="description" rows="3" placeholder="Description" aria-label="Description"></textarea>
     </label>
 
     <label class="form-label">
@@ -66,8 +66,8 @@ const submit = async () => {
 
     <div class="form-actions row">
       <div class="spacer"></div>
-      <button class="btn" @click="$emit('close')">Cancelar</button>
-      <button class="btn btn-primary" @click="submit">{{ props.taskToEdit ? 'Guardar' : 'Agregar' }}</button>
+    <button class="btn" @click="$emit('close')">Cancel</button>
+    <button class="btn btn-primary" @click="submit">{{ props.taskToEdit ? 'Save' : 'Add' }}</button>
     </div>
   </div>
 </template>

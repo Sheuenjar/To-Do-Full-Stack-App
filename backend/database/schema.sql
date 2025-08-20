@@ -9,5 +9,5 @@ CREATE TABLE IF NOT EXISTS tasks (
 
 -- Example data
 INSERT INTO tasks (title, description) VALUES
-('Ejemplo 1', 'Tarea de ejemplo 1'),
-('Ejemplo 2', 'Tarea de ejemplo 2');
+('Example 1', 'Example task 1'),
+('Example 2', 'Example task 2');
