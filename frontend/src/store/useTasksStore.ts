@@ -34,6 +34,17 @@ export const useTasksStore = defineStore('tasks', () => {
 
   const toggleCompleted = async (id: number, completed?: boolean) => {
     const updated = await toggleTask(id, completed)
+    // Ensure timestamps exist locally so sorting by completed_at/created_at works immediately
+    if (!updated.created_at) {
+      (updated as any).created_at = new Date().toISOString()
+    }
+    // If backend returns completed_at it will be used; otherwise derive from completed flag
+    if (updated.completed && !(updated as any).completed_at) {
+      (updated as any).completed_at = new Date().toISOString()
+    }
+    if (!updated.completed) {
+      (updated as any).completed_at = null
+    }
     tasks.value = tasks.value.map(t => t.id === id ? updated : t)
   }
 

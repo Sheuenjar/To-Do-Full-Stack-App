@@ -4,6 +4,7 @@ CREATE TABLE IF NOT EXISTS tasks (
   title TEXT NOT NULL,
   description TEXT,
   completed BOOLEAN NOT NULL DEFAULT FALSE,
+  completed_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
   priority TEXT NOT NULL DEFAULT 'medium',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT now()
 );

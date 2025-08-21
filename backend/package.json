@@ -7,7 +7,7 @@
   "dev": "nodemon --watch src --exec \"ts-node\" src/index.ts",
   "build": "tsc",
   "test": "cross-env NODE_ENV=test vitest --run",
-  "migrate": "node ./scripts/migrate-add-priority.js"
+  "migrate": "node ./scripts/migrate-add-priority.js ; node ./scripts/migrate-add-completed-at.js"
   },
   "keywords": [],
   "author": "",

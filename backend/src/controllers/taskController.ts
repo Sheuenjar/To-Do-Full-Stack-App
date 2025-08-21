@@ -147,15 +147,63 @@ export const toggleTask = async (req: Request, res: Response) => {
   try {
     let result;
     if (typeof completed === "boolean") {
-      result = await pool.query(
-        "UPDATE tasks SET completed = $1 WHERE id = $2 RETURNING *",
-        [completed, id]
-      );
+      // If DB has completed_at column, set or clear timestamp accordingly
+      try {
+        if (completed) {
+          result = await pool.query(
+            "UPDATE tasks SET completed = $1, completed_at = now() WHERE id = $2 RETURNING *",
+            [completed, id]
+          );
+        } else {
+          result = await pool.query(
+            "UPDATE tasks SET completed = $1, completed_at = NULL WHERE id = $2 RETURNING *",
+            [completed, id]
+          );
+        }
+      } catch (err: any) {
+        // If column doesn't exist, fall back to simple update
+        if (err && err.code === '42703') {
+          result = await pool.query(
+            "UPDATE tasks SET completed = $1 WHERE id = $2 RETURNING *",
+            [completed, id]
+          );
+        } else {
+          throw err
+        }
+      }
     } else {
-      result = await pool.query(
-        "UPDATE tasks SET completed = NOT completed WHERE id = $1 RETURNING *",
-        [id]
-      );
+      // Toggle: prefer to touch completed_at when toggling
+      try {
+        // First, fetch current value
+        const cur = await pool.query('SELECT completed FROM tasks WHERE id = $1', [id]);
+        if (!cur || cur.rows.length === 0) {
+          return res.status(404).json({ error: "Task not found" });
+        }
+        const curCompleted = cur.rows[0].completed as boolean
+        if (curCompleted) {
+          // currently completed -> uncomplete
+          result = await pool.query(
+            "UPDATE tasks SET completed = FALSE, completed_at = NULL WHERE id = $1 RETURNING *",
+            [id]
+          );
+        } else {
+          // currently not completed -> mark completed with now()
+          result = await pool.query(
+            "UPDATE tasks SET completed = TRUE, completed_at = now() WHERE id = $1 RETURNING *",
+            [id]
+          );
+        }
+      } catch (err: any) {
+        if (err && err.code === '42703') {
+          // Column missing: fallback to simple toggle
+          result = await pool.query(
+            "UPDATE tasks SET completed = NOT completed WHERE id = $1 RETURNING *",
+            [id]
+          );
+        } else {
+          throw err
+        }
+      }
     }
 
     if (!result || result.rows.length === 0) {
