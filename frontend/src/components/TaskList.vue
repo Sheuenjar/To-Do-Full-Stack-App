@@ -9,7 +9,6 @@ import FilterDropdown from './FilterDropdown.vue'
 const store = useTasksStore()
 const showForm = ref(false)
 const filterPriority = ref<'all'|'high'|'medium'|'low'>('all')
-const filterStatus = ref<'all'|'completed'|'pending'>('all')
 const sortDirection = ref<'none'|'asc'|'desc'>('none')
 
 onMounted(() => {
@@ -33,6 +32,8 @@ const dragOverIndex = ref<number | null>(null)
 // When the user manually reorders via DnD, set this flag so we don't re-sort
 // the visible list by created_at and undo their changes.
 const manualOrder = ref(false)
+// Completed section visibility (collapsed by default)
+const showCompleted = ref(false)
 
 const onDragStart = (e: DragEvent, id: number) => {
   dragId.value = id
@@ -66,7 +67,8 @@ const onDrop = (e: DragEvent, targetId: number) => {
   // If direct mapping fails (possible with filtered/sorted views or id type mismatches),
   // try a fallback: map positions in the currently rendered filtered list to the underlying store
   if (fromIndex === -1 || toIndex === -1) {
-    const renderedIds = filteredTasks.value.map(t => t.id)
+    // fallback to the currently rendered pending list (these are the draggable items)
+    const renderedIds = pendingTasks.value.map(t => t.id)
     const renderedFrom = renderedIds.indexOf(fromId)
     const renderedTo = renderedIds.indexOf(targetId)
     if (renderedFrom === -1 || renderedTo === -1) {
@@ -97,11 +99,10 @@ const onDrop = (e: DragEvent, targetId: number) => {
 const completedCount = () => store.tasks.filter(t => t.completed).length
 const totalCount = () => store.tasks.length
 
-const filteredTasks = computed(() => {
-  let list = store.tasks.slice()
+// Tasks that are pending (rendered in main list and draggable)
+const pendingTasks = computed(() => {
+  let list = store.tasks.slice().filter(t => !t.completed)
   if (filterPriority.value !== 'all') list = list.filter(t => t.priority === filterPriority.value)
-  if (filterStatus.value === 'completed') list = list.filter(t => t.completed)
-  if (filterStatus.value === 'pending') list = list.filter(t => !t.completed)
 
   if (sortDirection.value === 'asc') {
     const order = { high: 0, medium: 1, low: 2 }
@@ -121,6 +122,18 @@ const filteredTasks = computed(() => {
     })
   }
 
+  return list
+})
+
+// Completed tasks are grouped in a separate section at the bottom
+const completedTasks = computed(() => {
+  // If tasks have a completed_at timestamp, use it for ordering. Otherwise fall back to created_at.
+  const list = store.tasks.slice().filter(t => t.completed)
+  list.sort((a,b) => {
+    const ta = (a as any).completed_at ? new Date((a as any).completed_at).getTime() : (a.created_at ? new Date(a.created_at).getTime() : 0)
+    const tb = (b as any).completed_at ? new Date((b as any).completed_at).getTime() : (b.created_at ? new Date(b.created_at).getTime() : 0)
+    return tb - ta
+  })
   return list
 })
 </script>
@@ -145,7 +158,7 @@ const filteredTasks = computed(() => {
       <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
         <FilterDropdown v-model="filterPriority" :options="[{ value: 'all', label: 'All' }, { value: 'high', label: 'High' }, { value: 'medium', label: 'Medium' }, { value: 'low', label: 'Low' }]" label="Priority" />
 
-        <FilterDropdown v-model="filterStatus" :options="[{ value: 'all', label: 'All' }, { value: 'completed', label: 'Completed' }, { value: 'pending', label: 'Pending' }]" label="Status" />
+  <!-- Status filter removed: completed tasks are shown in a grouped section below -->
 
         <FilterDropdown v-model="sortDirection" :options="[{ value: 'none', label: 'No sort' }, { value: 'asc', label: 'Priority ↑' }, { value: 'desc', label: 'Priority ↓' }]" label="Sort" />
       </div>
@@ -157,11 +170,28 @@ const filteredTasks = computed(() => {
 
     <ul style="list-style:none; padding:0; margin:18px 0; display:flex; flex-direction:column; gap:12px">
       <div>
-        <div v-for="(task, idx) in filteredTasks" :key="task.id" :class="{ 'drag-over': dragOverIndex === idx }" draggable="true"
+        <div v-for="(task, idx) in pendingTasks" :key="task.id" :class="{ 'drag-over': dragOverIndex === idx }" draggable="true"
           @dragstart="(e)=>onDragStart(e, task.id)" @dragover="(e)=>onDragOver(e, idx)" @drop="(e)=>onDrop(e, task.id)" @dragend="onDragEnd">
           <TaskItem :task="task" @toggle="store.toggleCompleted" @delete="store.removeTask" />
         </div>
       </div>
     </ul>
+
+    <!-- Completed section grouped at the bottom -->
+    <div v-if="completedTasks.length" style="margin-top:20px">
+      <h3 @click="showCompleted = !showCompleted" style="margin:0 0 10px 0; color:var(--muted); cursor:pointer; display:flex; align-items:center; gap:8px">
+        <span>Completed</span>
+        <small style="color:var(--muted)">({{ completedTasks.length }})</small>
+        <span style="margin-left:auto; color:var(--muted)">{{ showCompleted ? '▲' : '▼' }}</span>
+      </h3>
+      <ul v-if="showCompleted" style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px">
+  <li v-for="task in completedTasks" :key="task.id">
+          <!-- Use the same TaskItem so the checkbox and menu are available to restore/delete -->
+          <div style="pointer-events:auto">
+            <TaskItem :task="task" @toggle="store.toggleCompleted" @delete="store.removeTask" />
+          </div>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>

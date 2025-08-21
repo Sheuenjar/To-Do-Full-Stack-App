@@ -66,6 +66,15 @@ h2{ margin:0 0 14px 0; font-size:0.95rem; color:var(--muted) }
   text-decoration: line-through;
 }
 
+/* Make completed tasks visually de-emphasized while keeping dropdowns usable. */
+.task-card--completed{
+  /* small transparency to reduce prominence */
+  opacity: 0.86;
+  transform: none;
+}
+
+.task-card--completed .priority-badge{ opacity: 0.7 }
+
 /* Task spacing wrapper */
 .task-row{ margin-bottom:12px; position:relative }
 
