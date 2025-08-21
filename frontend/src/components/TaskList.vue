@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useTasksStore } from '../store/useTasksStore'
 import TaskForm from './TaskForm.vue'
 import TaskItem from './TaskItem.vue'
@@ -13,16 +13,34 @@ const filterStatus = ref<'all'|'completed'|'pending'>('all')
 const sortDirection = ref<'none'|'asc'|'desc'>('none')
 
 onMounted(() => {
-  store.fetchTasks()
+  // ensure manualOrder is reset on initial load
+  const doFetch = async () => {
+    await store.fetchTasks()
+    manualOrder.value = false
+  }
+  void doFetch()
+})
+
+// If the user switches to an explicit sort, discard manual order so the
+// explicit sort takes precedence.
+watch(sortDirection, (v) => {
+  if (v !== 'none') manualOrder.value = false
 })
 
 // Drag state: store dragged task id (not filtered index) so we can map to the real array index
 const dragId = ref<number | null>(null)
 const dragOverIndex = ref<number | null>(null)
+// When the user manually reorders via DnD, set this flag so we don't re-sort
+// the visible list by created_at and undo their changes.
+const manualOrder = ref(false)
 
 const onDragStart = (e: DragEvent, id: number) => {
   dragId.value = id
-  e.dataTransfer?.setData('text/plain', String(id))
+  // required by some browsers to allow a move operation
+  if (e.dataTransfer) {
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(id))
+  }
 }
 
 const onDragOver = (e: DragEvent, index: number) => {
@@ -30,20 +48,48 @@ const onDragOver = (e: DragEvent, index: number) => {
   dragOverIndex.value = index
 }
 
+const onDragEnd = () => {
+  // clear ephemeral drag state
+  dragId.value = null
+  dragOverIndex.value = null
+}
+
 const onDrop = (e: DragEvent, targetId: number) => {
   e.preventDefault()
   // Determine dragged id (from ref or dataTransfer)
   const fromId = dragId.value ?? parseInt(e.dataTransfer?.getData('text/plain') || '0')
+
   // Map ids to indexes in the underlying store.tasks array
-  const fromIndex = store.tasks.findIndex(t => t.id === fromId)
-  const toIndex = store.tasks.findIndex(t => t.id === targetId)
+  let fromIndex = store.tasks.findIndex(t => t.id === fromId)
+  let toIndex = store.tasks.findIndex(t => t.id === targetId)
+
+  // If direct mapping fails (possible with filtered/sorted views or id type mismatches),
+  // try a fallback: map positions in the currently rendered filtered list to the underlying store
   if (fromIndex === -1 || toIndex === -1) {
-    // fallback: do nothing if mapping fails
-    dragId.value = null
-    dragOverIndex.value = null
-    return
+    const renderedIds = filteredTasks.value.map(t => t.id)
+    const renderedFrom = renderedIds.indexOf(fromId)
+    const renderedTo = renderedIds.indexOf(targetId)
+    if (renderedFrom === -1 || renderedTo === -1) {
+      dragId.value = null
+      dragOverIndex.value = null
+      return
+    }
+    const idAtFrom = renderedIds[renderedFrom]
+    const idAtTo = renderedIds[renderedTo]
+    fromIndex = store.tasks.findIndex(t => t.id === idAtFrom)
+    toIndex = store.tasks.findIndex(t => t.id === idAtTo)
+    if (fromIndex === -1 || toIndex === -1) {
+      dragId.value = null
+      dragOverIndex.value = null
+      return
+    }
   }
-  store.reorderTasks(fromIndex, toIndex)
+
+  if (fromIndex !== toIndex) {
+    store.reorderTasks(fromIndex, toIndex)
+    manualOrder.value = true
+  }
+
   dragId.value = null
   dragOverIndex.value = null
 }
@@ -66,7 +112,8 @@ const filteredTasks = computed(() => {
   }
 
   // Default: if there's no explicit sort, show most recent first by created_at
-  if (sortDirection.value === 'none') {
+  // unless the user has manually reordered the list via drag-and-drop.
+  if (sortDirection.value === 'none' && !manualOrder.value) {
     list.sort((a, b) => {
       const ta = a.created_at ? new Date(a.created_at).getTime() : 0
       const tb = b.created_at ? new Date(b.created_at).getTime() : 0
@@ -111,7 +158,7 @@ const filteredTasks = computed(() => {
     <ul style="list-style:none; padding:0; margin:18px 0; display:flex; flex-direction:column; gap:12px">
       <div>
         <div v-for="(task, idx) in filteredTasks" :key="task.id" :class="{ 'drag-over': dragOverIndex === idx }" draggable="true"
-          @dragstart="(e)=>onDragStart(e, task.id)" @dragover="(e)=>onDragOver(e, idx)" @drop="(e)=>onDrop(e, task.id)">
+          @dragstart="(e)=>onDragStart(e, task.id)" @dragover="(e)=>onDragOver(e, idx)" @drop="(e)=>onDrop(e, task.id)" @dragend="onDragEnd">
           <TaskItem :task="task" @toggle="store.toggleCompleted" @delete="store.removeTask" />
         </div>
       </div>
