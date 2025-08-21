@@ -8,6 +8,7 @@ import { z } from "zod";
 const taskSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().nullable().optional(),
+  priority: z.enum(['low', 'medium', 'high']).optional(),
 });
 
 
@@ -17,9 +18,9 @@ const taskSchema = z.object({
  */
 export const getAllTasks = async (_req: Request, res: Response) => {
   try {
-    // Simple ordering by id (compatible with current DB schema)
+    // Order by newest first (created_at desc), then id desc to be deterministic
     const result = await pool.query(
-      "SELECT * FROM tasks ORDER BY id ASC"
+      "SELECT * FROM tasks ORDER BY created_at DESC, id DESC"
     );
     res.json(result.rows);
   } catch (err) {
@@ -37,16 +38,31 @@ export const createTask = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
   }
   const { title, description } = parsed.data;
+  const priority = (parsed.data as any).priority ?? 'medium';
 
   try {
+    // Try inserting with priority (if DB has the column)
     const result = await pool.query(
-      "INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *",
-      [title, description ?? null]
+      "INSERT INTO tasks (title, description, priority) VALUES ($1, $2, $3) RETURNING *",
+      [title, description ?? null, priority]
     );
     res.status(201).json(result.rows[0]);
-  } catch (err) {
-  console.error(err);
-  res.status(500).json({ error: "Error creating task" });
+  } catch (err: any) {
+    console.error(err);
+    // If the column 'priority' doesn't exist in this DB, fallback to insert without it
+    if (err && err.code === '42703') {
+      try {
+        const result = await pool.query(
+          "INSERT INTO tasks (title, description) VALUES ($1, $2) RETURNING *",
+          [title, description ?? null]
+        );
+        res.status(201).json(result.rows[0]);
+        return;
+      } catch (err2) {
+        console.error('Fallback insert failed', err2);
+      }
+    }
+    res.status(500).json({ error: "Error creating task" });
   }
 };
 
@@ -60,18 +76,35 @@ export const updateTask = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "Invalid body", details: parsed.error.issues });
   }
   const { title, description } = parsed.data;
+  const priority = (parsed.data as any).priority ?? 'medium';
 
   try {
+    // Try updating with priority (if DB has the column)
     const result = await pool.query(
-      "UPDATE tasks SET title = $1, description = $2 WHERE id = $3 RETURNING *",
-      [title, description ?? null, id]
+      "UPDATE tasks SET title = $1, description = $2, priority = $3 WHERE id = $4 RETURNING *",
+      [title, description ?? null, priority, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Task not found" });
     }
     res.json(result.rows[0]);
-  } catch (err) {
+  } catch (err: any) {
   console.error(err);
+  // Fallback: if priority column missing, try update without it
+  if (err && err.code === '42703') {
+    try {
+      const result = await pool.query(
+        "UPDATE tasks SET title = $1, description = $2 WHERE id = $3 RETURNING *",
+        [title, description ?? null, id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: "Task not found" });
+      }
+      return res.json(result.rows[0]);
+    } catch (err2) {
+      console.error('Fallback update failed', err2);
+    }
+  }
   res.status(500).json({ error: "Error editing task" });
   }
 };

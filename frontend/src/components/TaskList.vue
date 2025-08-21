@@ -65,6 +65,15 @@ const filteredTasks = computed(() => {
     list.sort((a,b) => order[b.priority] - order[a.priority])
   }
 
+  // Default: if there's no explicit sort, show most recent first by created_at
+  if (sortDirection.value === 'none') {
+    list.sort((a, b) => {
+      const ta = a.created_at ? new Date(a.created_at).getTime() : 0
+      const tb = b.created_at ? new Date(b.created_at).getTime() : 0
+      return tb - ta
+    })
+  }
+
   return list
 })
 </script>

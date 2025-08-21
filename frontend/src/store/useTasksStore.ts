@@ -7,12 +7,19 @@ export const useTasksStore = defineStore('tasks', () => {
   const tasks = ref<Task[]>([])
 
   const fetchTasks = async () => {
-    tasks.value = await getTasks()
+  tasks.value = await getTasks()
+  console.debug('[store] fetchTasks -> order ids:', tasks.value.map(t => t.id))
   }
 
   const createTask = async (title: string, description?: string | null, priority: 'low'|'medium'|'high' = 'medium') => {
     const newTask = await addTask({ title, description, priority })
-    tasks.value.push(newTask)
+    // Ensure created_at exists so sorting by created_at works immediately
+    if (!newTask.created_at) {
+      (newTask as any).created_at = new Date().toISOString()
+    }
+    // Add new tasks to the top so the most recent appear first
+    tasks.value = [newTask, ...tasks.value]
+  console.debug('[store] createTask -> added id', newTask.id, 'resulting order ids:', tasks.value.map(t => t.id))
   }
 
   const editTask = async (id: number, title: string, description?: string | null, priority: 'low'|'medium'|'high' = 'medium') => {
