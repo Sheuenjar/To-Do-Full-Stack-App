@@ -146,21 +146,20 @@ const completedTasks = computed(() => {
         <h2>Organize your day — add, edit and mark as completed</h2>
       </div>
 
-      <div class="spacer"></div>
-
-      <div style="display:flex; align-items:center">
-  <button class="btn btn-primary" v-if="!showForm" @click="showForm = true">Add task</button>
-      </div>
+  <div class="spacer"></div>
     </div>
 
     <!-- Filters bar: horizontal, directly under header -->
     <div class="filters-bar" style="margin-bottom:18px">
-      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap">
-        <FilterDropdown v-model="filterPriority" :options="[{ value: 'all', label: 'All' }, { value: 'high', label: 'High' }, { value: 'medium', label: 'Medium' }, { value: 'low', label: 'Low' }]" label="Priority" />
-
-  <!-- Status filter removed: completed tasks are shown in a grouped section below -->
-
-        <FilterDropdown v-model="sortDirection" :options="[{ value: 'none', label: 'No sort' }, { value: 'asc', label: 'Priority ↑' }, { value: 'desc', label: 'Priority ↓' }]" label="Sort" />
+      <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap; width:100%">
+        <div style="display:flex; gap:12px; align-items:center; flex:1; min-width:0">
+          <FilterDropdown v-model="filterPriority" :options="[{ value: 'all', label: 'All' }, { value: 'high', label: 'High' }, { value: 'medium', label: 'Medium' }, { value: 'low', label: 'Low' }]" label="Priority" />
+          <!-- Status filter removed: completed tasks are shown in a grouped section below -->
+          <FilterDropdown v-model="sortDirection" :options="[{ value: 'none', label: 'No sort' }, { value: 'asc', label: 'Priority ↑' }, { value: 'desc', label: 'Priority ↓' }]" label="Sort" />
+        </div>
+        <div style="display:flex; align-items:center; justify-content:flex-end; min-width:0">
+          <button class="btn btn-primary" v-if="!showForm" @click="showForm = true" style="padding:10px 16px; font-size:15px; border-radius:8px;">Add task</button>
+        </div>
       </div>
     </div>
 

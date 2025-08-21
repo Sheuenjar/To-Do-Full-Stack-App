@@ -1,4 +1,31 @@
 # To-Do Full Stack App
+
+This repository contains a small To-Do application with a Vue 3 + Pinia frontend and a Node.js + Express (TypeScript) backend using PostgreSQL.
+
+This README gives a quick overview and points to the per-service setup instructions.
+
+Contents
+- `backend/` — API server, TypeScript, migrations and tests
+- `frontend/` — Vue 3 + Vite + TypeScript client
+- `database/` — SQL schema and seed data
+
+Quick start (development)
+1. Create a PostgreSQL database and run the schema:
+   - psql -U <user> -d <db> -f database/schema.sql
+2. Start the backend:
+   - cd backend
+   - copy `.env.example` to `.env` and edit values
+   - npm install
+   - npm run dev
+3. Start the frontend (in another terminal):
+   - cd frontend
+   - npm install
+   - npm run dev
+
+See `backend/README.md` and `frontend/README.md` for full, step-by-step instructions, environment variables, and production build notes.
+
+License: MIT
+# To-Do Full Stack App
 ![Vue.js](https://img.shields.io/badge/Vue.js-3.x-brightgreen)
 ![Pinia](https://img.shields.io/badge/Pinia-State-yellowgreen)
 ![TypeScript](https://img.shields.io/badge/TypeScript-4.x-blue)
