@@ -1,7 +1,7 @@
 import axios from 'axios'
 import type { Task } from '../types/task'
 
-const API_URL = '/api/tasks' // usar proxy de vite
+const API_URL = '/api/tasks' // Use Vite proxy
 
 export const getTasks = async (): Promise<Task[]> => {
   const res = await axios.get<Task[]>(API_URL)
@@ -23,7 +23,7 @@ export const deleteTask = async (id: number): Promise<void> => {
 }
 
 /**
- * PATCH: si se pasa { completed } lo aplica; si no, backend hace toggle
+ * PATCH: if { completed } is passed, it is applied; otherwise, the backend toggles it
  */
 export const toggleTask = async (id: number, completed?: boolean): Promise<Task> => {
   const payload = typeof completed === 'boolean' ? { completed } : {}

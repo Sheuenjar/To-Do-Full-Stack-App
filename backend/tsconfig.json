@@ -1,15 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES2020",              // JS moderno compatible con Node 18+
-    "module": "commonjs",            // Sistema de módulos para Node.js
-    "rootDir": "./src",              // Carpeta donde está tu código TS
-    "outDir": "./dist",              // Carpeta donde se generará el JS compilado
-    "strict": true,                  // Habilita chequeos estrictos de tipos
-    "esModuleInterop": true,         // Facilita importar librerías comunes
-    "forceConsistentCasingInFileNames": true,  // Evita errores por mayúsculas/minúsculas
-    "skipLibCheck": true,            // Acelera compilación ignorando tipos de librerías
-    "sourceMap": true                // Genera mapas para debug
+    "target": "ES2020",              // Modern JS compatible with Node 18+
+    "module": "commonjs",            // Module system for Node.js
+    "rootDir": "./src",              // Folder containing your TS code
+    "outDir": "./dist",              // Folder where compiled JS will be generated
+    "strict": true,                  // Enables strict type checking
+    "esModuleInterop": true,         // Simplifies importing common libraries
+    "forceConsistentCasingInFileNames": true,  // Prevents errors due to case sensitivity
+    "skipLibCheck": true,            // Speeds up compilation by skipping library type checks
+    "sourceMap": true                // Generates maps for debugging
   },
-  "include": ["src"],                // Solo compila archivos dentro de src
-  "exclude": ["node_modules", "dist"] // Ignora node_modules y dist
+  "include": ["src"],                // Only compiles files within src
+  "exclude": ["node_modules", "dist"] // Ignores node_modules and dist
 }

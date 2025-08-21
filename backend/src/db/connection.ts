@@ -1,7 +1,7 @@
 import { Pool } from "pg";
 import path from "path";
 
-// Cargar variables de entorno: .env (por defecto) o .env.test cuando NODE_ENV=test
+// Load environment variables: .env (default) or .env.test when NODE_ENV=test
 import dotenv from "dotenv";
 const envFile = process.env.NODE_ENV === "test" ? ".env.test" : ".env";
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
